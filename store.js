@@ -1,7 +1,8 @@
 
 import React, { createContext, useEffect, useState } from 'react';
-export const FirebaseContext = createContext();
 import firebase from 'firebase';
+
+export const FirebaseContext = createContext();
 
 export const FirebaseContextProvider = (props) => {
   const [dbInstance, setDB] = useState();

@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
-import { FirebaseContext } from './store'
+import { FirebaseContext } from '../store'
 
 export default function Home() {
 

@@ -1,5 +1,5 @@
 import '../styles/globals.css'
-import { FirebaseContextProvider } from './store'
+import { FirebaseContextProvider } from '../store'
 
 function MyApp({ Component, pageProps }) {
   return (
