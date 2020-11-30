@@ -5,31 +5,13 @@ import { FirebaseContext } from '../store'
 
 export default function Home() {
 
-  const { dbInstance } = useContext(FirebaseContext);
+  const { notesData } = useContext(FirebaseContext);
   const [notes, setNotes ] = useState([]);
 
   useEffect(() => {
+    setNotes(notesData)
 
-    console.log(dbInstance)
-
-    if(dbInstance) {
-      var resp = [];
-      dbInstance.collection("notes").get().then((querySnapshot) => {
-        console.log(querySnapshot)
-          querySnapshot.forEach((doc) => {
-              console.log(`${doc.id} => ${doc.data().title}`);
-              resp.push({
-                title: doc.data().title,
-                body:doc.data().body,
-              })
-          });
-  
-          setNotes(resp)
-      
-      });
-    }
-    
-  }, [dbInstance])
+  }, [notesData])
   
   
   return (
@@ -43,7 +25,11 @@ export default function Home() {
       <ul>
         {notes.map((item, id) => {
           return (
-            <li key={id}>{item.title} - {item.body}</li>
+            <li key={id}>
+              <Link href={`/notes/${item.id}`}>
+                <a>{item.title} - {item.body}</a>
+              </Link>
+            </li>
           )
 
         })}

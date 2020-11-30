@@ -6,6 +6,7 @@ export const FirebaseContext = createContext();
 
 export const FirebaseContextProvider = (props) => {
   const [dbInstance, setDB] = useState();
+  const [notesData, setNotes] = useState([]);
 
   useEffect(() => {
     var firebaseConfig = {
@@ -21,12 +22,32 @@ export const FirebaseContextProvider = (props) => {
    
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
+
+    var resp = [];
+    if(db) {
+      db.collection("notes").get().then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+              console.log(`${doc.id} => ${doc.data().title}`);
+              resp.push({
+                id: doc.id,
+                title: doc.data().title,
+                body:doc.data().body,
+              })
+          });
+          setNotes(resp)
+
+      });
+    }
+    
     setDB(db)
 
   }, [])
 
   return (
-    <FirebaseContext.Provider value={{ dbInstance }}>
+    <FirebaseContext.Provider value={{ 
+      dbInstance,
+      notesData: notesData
+    }}>
       {props.children}
     </FirebaseContext.Provider>
   )
