@@ -23,8 +23,9 @@ export const FirebaseContextProvider = (props) => {
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 
-    var resp = [];
+    
     if(db) {
+      var resp = [];
       db.collection("notes").get().then((querySnapshot) => {
           querySnapshot.forEach((doc) => {
               console.log(`${doc.id} => ${doc.data().title}`);

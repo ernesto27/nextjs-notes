@@ -19,18 +19,37 @@ export default function EditNote() {
     }, [notesData]);
 
     const editNote = () => {
-        console.log(router.query.id)
         dbInstance.collection("notes").doc(router.query.id).update({
             title: title,
             body: body
         })
         .then(function(docRef) {
-            console.log("Document written with ID: ", docRef);
+            console.log("Document updated with ID: ", docRef);
+            alert('Note updated!');
+            router.push({
+                pathname: '/',
+                query: { 'update': true }
+            });
         })
         .catch(function(error) {
-            console.error("Error adding document: ", error);
+            console.error("Error updating document: ", error);
+            alert("Error updating document: ", error)
         });
- 
+    }
+
+    const deleteNote = () => {
+        dbInstance.collection("notes").doc(router.query.id).delete()
+        .then(function(docRef) {
+            console.log("Document deleted");
+            alert('Document deleted');
+            router.push({
+                pathname: '/',
+                query: { 'update': true }
+            });
+        })
+        .catch(function(error) {
+            console.error("Error deleting document: ", error);
+        });
     }
 
     return (
@@ -50,6 +69,12 @@ export default function EditNote() {
                     onClick={editNote} 
                     type="button" 
                     value="Edit" />
+
+                <input 
+                    style={{ "marginLeft": "8px" }}
+                    onClick={deleteNote} 
+                    type="button" 
+                    value="Delete" />
             </form>
         </div>
     )

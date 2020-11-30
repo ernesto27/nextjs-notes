@@ -2,14 +2,32 @@ import Head from 'next/head'
 import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
 import { FirebaseContext } from '../store'
+import { useRouter } from "next/router";
 
 export default function Home() {
 
-  const { notesData } = useContext(FirebaseContext);
+  const { notesData, dbInstance } = useContext(FirebaseContext);
   const [notes, setNotes ] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     setNotes(notesData)
+
+    if(router.query.update === 'true') {
+      console.log('update data')
+      var resp = [];
+      dbInstance.collection("notes").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            resp.push({
+              id: doc.id,
+              title: doc.data().title,
+              body:doc.data().body,
+            })
+        });
+        setNotes(resp)
+
+      });
+    }
 
   }, [notesData])
   

@@ -1,10 +1,12 @@
 import { FirebaseContext } from '../../store'
 import { useEffect, useState, useContext } from 'react';
+import { useRouter } from "next/router";
 
 export default function AddNote() {
     const { dbInstance } = useContext(FirebaseContext);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
+    const router = useRouter();
 
     const addNote = () => {
         // Validate input
@@ -14,6 +16,11 @@ export default function AddNote() {
         })
         .then(function(docRef) {
             console.log("Document written with ID: ", docRef.id);
+            alert('New note added');
+            router.push({
+                pathname: '/',
+                query: { 'update': true }
+            });
         })
         .catch(function(error) {
             console.error("Error adding document: ", error);
