@@ -6,28 +6,38 @@ import { useRouter } from "next/router";
 
 export default function Home() {
 
-  const { notesData, dbInstance } = useContext(FirebaseContext);
+  const { notesData, dbInstance, firebase } = useContext(FirebaseContext);
   const [notes, setNotes ] = useState([]);
   const router = useRouter();
+
+  const doLogout = () => {
+    firebase.auth().signOut().then(function() {
+    // Sign-out successful.
+    }).catch(function(error) {
+    // An error happened.
+    });
+  }
 
   useEffect(() => {
     setNotes(notesData)
 
+
     if(router.query.update === 'true') {
       console.log('update data')
       var resp = [];
-      dbInstance.collection("notes").get().then((querySnapshot) => {
+      const user = firebase.auth().currentUser;
+      dbInstance.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             resp.push({
               id: doc.id,
               title: doc.data().title,
-              body:doc.data().body,
+              body: doc.data().body
             })
         });
         setNotes(resp)
-
       });
     }
+
 
   }, [notesData])
   
@@ -40,6 +50,9 @@ export default function Home() {
       <Link href="/notes/add">
         <a>New note</a>
       </Link>
+
+      <br></br><br></br>
+      <button onClick={doLogout}>Logout</button>
       <ul>
         {notes.map((item, id) => {
           return (

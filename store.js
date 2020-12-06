@@ -1,12 +1,16 @@
 
 import React, { createContext, useEffect, useState } from 'react';
 import firebase from 'firebase';
+import { useRouter } from "next/router";
+
 
 export const FirebaseContext = createContext();
 
 export const FirebaseContextProvider = (props) => {
   const [dbInstance, setDB] = useState();
   const [notesData, setNotes] = useState([]);
+  const [user, setUser] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     var firebaseConfig = {
@@ -23,22 +27,50 @@ export const FirebaseContextProvider = (props) => {
     firebase.initializeApp(firebaseConfig);
     var db = firebase.firestore();
 
-    
-    if(db) {
-      var resp = [];
-      db.collection("notes").get().then((querySnapshot) => {
-          querySnapshot.forEach((doc) => {
-              console.log(`${doc.id} => ${doc.data().title}`);
-              resp.push({
-                id: doc.id,
-                title: doc.data().title,
-                body:doc.data().body,
-              })
-          });
-          setNotes(resp)
+    console.log(router.pathname)
 
-      });
-    }
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+            console.log(user)
+            console.log('User logged')
+            if(db) {
+              var resp = [];
+              const user = firebase.auth().currentUser;
+              db.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot) => {
+                  querySnapshot.forEach((doc) => {
+                      console.log(`${doc.id} => ${doc.data().title}`);
+                      resp.push({
+                        id: doc.id,
+                        title: doc.data().title,
+                        body:doc.data().body,
+                      })
+                  });
+                  setNotes(resp)
+        
+              });
+            }
+
+            if ( router.pathname === '/login' ) {
+              router.push({
+                pathname: '/'
+              });
+            }
+
+            
+            setUser(user);
+        // User is signed in.
+        } else {
+            setUser([]);
+            console.log('User logout')
+            router.push({
+              pathname: '/login'
+            });
+        // No user is signed in.
+        }
+    });
+
+
+   
     
     setDB(db)
 
@@ -46,8 +78,10 @@ export const FirebaseContextProvider = (props) => {
 
   return (
     <FirebaseContext.Provider value={{ 
+      firebase,
+      user,
       dbInstance,
-      notesData: notesData
+      notesData
     }}>
       {props.children}
     </FirebaseContext.Provider>

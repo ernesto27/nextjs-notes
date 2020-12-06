@@ -3,16 +3,20 @@ import { useEffect, useState, useContext } from 'react';
 import { useRouter } from "next/router";
 
 export default function AddNote() {
-    const { dbInstance } = useContext(FirebaseContext);
+    const { dbInstance, firebase } = useContext(FirebaseContext);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const router = useRouter();
 
     const addNote = () => {
+
+        const user = firebase.auth().currentUser;
         // Validate input
          dbInstance.collection("notes").add({
             body: body,
-            title: title
+            title: title,
+            updated: new Date().getTime(),
+            uid: user.uid
         })
         .then(function(docRef) {
             console.log("Document written with ID: ", docRef.id);

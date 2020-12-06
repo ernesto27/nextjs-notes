@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 
 export default function EditNote() {
-    const { notesData, dbInstance } = useContext(FirebaseContext);
+    const { notesData, dbInstance, firebase } = useContext(FirebaseContext);
     const [title, setTitle] = useState('');
     const [body, setBody] = useState('');
     const router = useRouter();
@@ -19,13 +19,15 @@ export default function EditNote() {
     }, [notesData]);
 
     const editNote = () => {
+        const user = firebase.auth().currentUser;
         dbInstance.collection("notes").doc(router.query.id).update({
             title: title,
-            body: body
+            body: body,
+            updated: new Date().getTime(),
+            uid: user.uid
         })
         .then(function(docRef) {
             console.log("Document updated with ID: ", docRef);
-            alert('Note updated!');
             router.push({
                 pathname: '/',
                 query: { 'update': true }
