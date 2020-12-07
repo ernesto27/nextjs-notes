@@ -1,12 +1,11 @@
-import Head from 'next/head'
 import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
-import { FirebaseContext } from '../store'
+import { FirebaseContext } from '../store.tsx'
 import { useRouter } from "next/router";
 
 export default function Home() {
 
-  const { notesData, dbInstance, firebase, updateNotes } = useContext(FirebaseContext);
+  const { notesData, firebase, updateNotes } = useContext(FirebaseContext);
   const [notes, setNotes ] = useState([]);
   const router = useRouter();
 
