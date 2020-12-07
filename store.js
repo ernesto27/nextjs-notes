@@ -2,9 +2,8 @@
 import React, { createContext, useEffect, useState } from 'react';
 import firebase from 'firebase';
 import { useRouter } from "next/router";
-
-
 export const FirebaseContext = createContext();
+var db;
 
 export const FirebaseContextProvider = (props) => {
   const [dbInstance, setDB] = useState();
@@ -25,28 +24,15 @@ export const FirebaseContextProvider = (props) => {
 
    
     firebase.initializeApp(firebaseConfig);
-    var db = firebase.firestore();
-
-    console.log(router.pathname)
+    db = firebase.firestore();
 
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             console.log(user)
             console.log('User logged')
             if(db) {
-              var resp = [];
-              const user = firebase.auth().currentUser;
-              db.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot) => {
-                  querySnapshot.forEach((doc) => {
-                      console.log(`${doc.id} => ${doc.data().title}`);
-                      resp.push({
-                        id: doc.id,
-                        title: doc.data().title,
-                        body:doc.data().body,
-                      })
-                  });
-                  setNotes(resp)
-        
+              getNotes(firebase, db, (resp) => {
+                setNotes(resp);
               });
             }
 
@@ -69,9 +55,6 @@ export const FirebaseContextProvider = (props) => {
         }
     });
 
-
-   
-    
     setDB(db)
 
   }, [])
@@ -81,9 +64,31 @@ export const FirebaseContextProvider = (props) => {
       firebase,
       user,
       dbInstance,
-      notesData
+      notesData,
+      updateNotes: (notes) => {
+        getNotes(firebase, db, (resp) => {
+          setNotes(resp);
+        });
+      }
     }}>
       {props.children}
     </FirebaseContext.Provider>
   )
+}
+
+
+function getNotes(firebase, db, cb) {
+  var resp = [];
+  const user = firebase.auth().currentUser;
+  db.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot) => {
+      querySnapshot.forEach((doc) => {
+          console.log(`${doc.id} => ${doc.data().title}`);
+          resp.push({
+            id: doc.id,
+            title: doc.data().title,
+            body:doc.data().body,
+          })
+      });
+    cb(resp);
+  });
 }
