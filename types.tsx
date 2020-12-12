@@ -10,9 +10,6 @@ export type Note = {
 
 
 export type ContextType = {
-    firebase: any,
-    user: firebase.User | [],
-    dbInstance: firebase.firestore.Firestore,
     notesData: Note[] | [],
     updateNotes: () => void
   }
