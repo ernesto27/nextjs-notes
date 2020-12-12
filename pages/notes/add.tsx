@@ -1,37 +1,20 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { useRouter } from "next/router";
-import firebase from 'firebase';
-import { FirebaseContext } from '../../store'
-import { Note, ContextType } from '../../types';
+import { client } from '../../client';
 
 export default function AddNote() {
-    const { dbInstance, firebase } = useContext<ContextType>(FirebaseContext);
     const [title, setTitle] = useState<string>('');
     const [body, setBody] = useState<string>('');
     const router = useRouter();
 
     const addNote = () => {
-
-        const user:firebase.User = firebase.auth().currentUser;
-        // Validate input
-
-        const note:Note = {
-            body: body,
-            title: title,
-            updated: new Date().getTime().toString(),
-            uid: user.uid
-        }
-        dbInstance.collection("notes").add(note)
-        .then(function(docRef) {
+        client.addNote(title, body, (docRef) => {
             console.log("Document written with ID: ", docRef.id);
             alert('New note added');
             router.push({
                 pathname: '/',
                 query: { 'update': true }
             });
-        })
-        .catch(function(error) {
-            console.error("Error adding document: ", error);
         });
     }
 

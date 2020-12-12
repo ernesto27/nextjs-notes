@@ -3,20 +3,16 @@ import Link from 'next/link';
 import { useRouter } from "next/router";
 import { FirebaseContext } from '../store';
 import { Note, ContextType } from '../types';
+import { client } from '../client';
 
 export default function Home() {
 
-  const { notesData, firebase, updateNotes } = useContext<ContextType>(FirebaseContext);
+  const { notesData, updateNotes } = useContext<ContextType>(FirebaseContext);
   const [notes, setNotes ] = useState<Note[]>([]);
   const router = useRouter();
 
   const doLogout = () => {
-    firebase.auth().signOut().then(function() {
-    // Sign-out successful.
-    }).catch(function(error) {
-      console.log(error)
-    // An error happened.
-    });
+    client.signOut();
   }
 
 
