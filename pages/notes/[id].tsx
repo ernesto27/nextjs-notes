@@ -13,7 +13,7 @@ export default function EditNote() {
 
     useEffect(() => {
         if(notesData[0] !== undefined ) {
-            const item:Note = notesData.find(element => element.id === router.query.id);
+            const item:Note = notesData.find((element:Note) => element.id === router.query.id.toString());
             setTitle(item.title);
             setBody(item.body);
         }
