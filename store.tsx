@@ -1,15 +1,15 @@
-
 import React, { createContext, useEffect, useState } from 'react';
 import firebase from 'firebase';
 import { useRouter } from "next/router";
-
-
-export const FirebaseContext = createContext();
+import { Note, ContextType } from './types';
+ 
+export const FirebaseContext = createContext<ContextType | null>(null);
+var db: firebase.firestore.Firestore;
 
 export const FirebaseContextProvider = (props) => {
-  const [dbInstance, setDB] = useState();
-  const [notesData, setNotes] = useState([]);
-  const [user, setUser] = useState([]);
+  const [dbInstance, setDB] = useState<firebase.firestore.Firestore>();
+  const [notesData, setNotes] = useState<Note[] | []>([]);
+  const [user, setUser] = useState<firebase.User | []>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,30 +23,18 @@ export const FirebaseContextProvider = (props) => {
       appId: process.env.NEXT_PUBLIC_APP_ID
     };
 
-   
+
+    
     firebase.initializeApp(firebaseConfig);
-    var db = firebase.firestore();
+    db = firebase.firestore();
 
-    console.log(router.pathname)
-
-    firebase.auth().onAuthStateChanged(function(user) {
+    firebase.auth().onAuthStateChanged(function(user: firebase.User) {
         if (user) {
             console.log(user)
             console.log('User logged')
             if(db) {
-              var resp = [];
-              const user = firebase.auth().currentUser;
-              db.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot) => {
-                  querySnapshot.forEach((doc) => {
-                      console.log(`${doc.id} => ${doc.data().title}`);
-                      resp.push({
-                        id: doc.id,
-                        title: doc.data().title,
-                        body:doc.data().body,
-                      })
-                  });
-                  setNotes(resp)
-        
+              getNotes(firebase, db, (resp: Note[]) => {
+                setNotes(resp);
               });
             }
 
@@ -69,9 +57,6 @@ export const FirebaseContextProvider = (props) => {
         }
     });
 
-
-   
-    
     setDB(db)
 
   }, [])
@@ -81,9 +66,33 @@ export const FirebaseContextProvider = (props) => {
       firebase,
       user,
       dbInstance,
-      notesData
+      notesData,
+      updateNotes: function () {
+        getNotes(firebase, db, (resp: Note[]) => {
+          setNotes(resp);
+        });
+      }
     }}>
       {props.children}
     </FirebaseContext.Provider>
   )
+}
+
+
+function getNotes(firebase, db: firebase.firestore.Firestore, cb: Function): void {
+  var resp: Note[] = [];
+  const user: firebase.User = firebase.auth().currentUser;
+  db.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot: firebase.firestore.DocumentData) => {
+      querySnapshot.forEach((doc) => {
+          console.log(`${doc.id} => ${doc.data().title}`);
+          resp.push({
+            id: doc.id,
+            title: doc.data().title,
+            body:doc.data().body,
+            uid: doc.data().uid,
+            updated: doc.data().updated,
+          })
+      });
+    cb(resp);
+  });
 }

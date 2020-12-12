@@ -1,17 +1,19 @@
 import { useEffect, useState, useContext } from 'react';
-import { FirebaseContext } from '../../store'
 import { useRouter } from "next/router";
+import { FirebaseContext } from '../../store'
+import { Note, ContextType } from '../../types';
+import firebase from 'firebase';
 
 
 export default function EditNote() {
-    const { notesData, dbInstance, firebase } = useContext(FirebaseContext);
-    const [title, setTitle] = useState('');
-    const [body, setBody] = useState('');
+    const { notesData, dbInstance, firebase } = useContext<ContextType>(FirebaseContext);
+    const [title, setTitle] = useState<string>('');
+    const [body, setBody] = useState<string>('');
     const router = useRouter();
 
     useEffect(() => {
         if(notesData[0] !== undefined ) {
-            const item = notesData.find(element => element.id === router.query.id);
+            const item:Note = notesData.find((element:Note) => element.id === router.query.id.toString());
             setTitle(item.title);
             setBody(item.body);
         }
@@ -19,13 +21,15 @@ export default function EditNote() {
     }, [notesData]);
 
     const editNote = () => {
-        const user = firebase.auth().currentUser;
-        dbInstance.collection("notes").doc(router.query.id).update({
+        const user:firebase.User = firebase.auth().currentUser;
+
+        const note:Note = {
             title: title,
             body: body,
-            updated: new Date().getTime(),
+            updated: new Date().getTime().toString(),
             uid: user.uid
-        })
+        }
+        dbInstance.collection("notes").doc(router.query.id.toString()).update(note)
         .then(function(docRef) {
             console.log("Document updated with ID: ", docRef);
             router.push({
@@ -35,12 +39,12 @@ export default function EditNote() {
         })
         .catch(function(error) {
             console.error("Error updating document: ", error);
-            alert("Error updating document: ", error)
+            alert("Error updating document: ")
         });
     }
 
     const deleteNote = () => {
-        dbInstance.collection("notes").doc(router.query.id).delete()
+        dbInstance.collection("notes").doc(router.query.id.toString()).delete()
         .then(function(docRef) {
             console.log("Document deleted");
             alert('Document deleted');

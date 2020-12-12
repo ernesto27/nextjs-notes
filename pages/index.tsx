@@ -1,45 +1,34 @@
-import Head from 'next/head'
 import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
-import { FirebaseContext } from '../store'
 import { useRouter } from "next/router";
+import { FirebaseContext } from '../store';
+import { Note, ContextType } from '../types';
 
 export default function Home() {
 
-  const { notesData, dbInstance, firebase } = useContext(FirebaseContext);
-  const [notes, setNotes ] = useState([]);
+  const { notesData, firebase, updateNotes } = useContext<ContextType>(FirebaseContext);
+  const [notes, setNotes ] = useState<Note[]>([]);
   const router = useRouter();
 
   const doLogout = () => {
     firebase.auth().signOut().then(function() {
     // Sign-out successful.
     }).catch(function(error) {
+      console.log(error)
     // An error happened.
     });
   }
 
+
   useEffect(() => {
     setNotes(notesData)
-
-
-    if(router.query.update === 'true') {
-      console.log('update data')
-      var resp = [];
-      const user = firebase.auth().currentUser;
-      dbInstance.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-            resp.push({
-              id: doc.id,
-              title: doc.data().title,
-              body: doc.data().body
-            })
-        });
-        setNotes(resp)
-      });
-    }
-
-
   }, [notesData])
+
+  useEffect(() => {
+    if(router.query.update === 'true') {
+      updateNotes();
+    }
+  }, [])
   
   
   return (
