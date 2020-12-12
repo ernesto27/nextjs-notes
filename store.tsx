@@ -1,28 +1,14 @@
-
 import React, { createContext, useEffect, useState } from 'react';
 import firebase from 'firebase';
 import { useRouter } from "next/router";
-
-type Notes = {
-  id: string,
-  title: string,
-  body: string
-}
-
-type ContextType = {
-  firebase: any,
-  user: firebase.User | [],
-  dbInstance: firebase.firestore.Firestore,
-  notesData: Notes | [],
-  updateNotes: () => void
-}
+import { Note, ContextType } from './types';
  
 export const FirebaseContext = createContext<ContextType | null>(null);
 var db: firebase.firestore.Firestore;
 
 export const FirebaseContextProvider = (props) => {
   const [dbInstance, setDB] = useState<firebase.firestore.Firestore>();
-  const [notesData, setNotes] = useState<Notes | []>([]);
+  const [notesData, setNotes] = useState<Note[] | []>([]);
   const [user, setUser] = useState<firebase.User | []>([]);
   const router = useRouter();
 
@@ -47,7 +33,7 @@ export const FirebaseContextProvider = (props) => {
             console.log(user)
             console.log('User logged')
             if(db) {
-              getNotes(firebase, db, (resp) => {
+              getNotes(firebase, db, (resp: Note[]) => {
                 setNotes(resp);
               });
             }
@@ -82,7 +68,7 @@ export const FirebaseContextProvider = (props) => {
       dbInstance,
       notesData,
       updateNotes: function () {
-        getNotes(firebase, db, (resp: Notes) => {
+        getNotes(firebase, db, (resp: Note[]) => {
           setNotes(resp);
         });
       }
@@ -94,7 +80,7 @@ export const FirebaseContextProvider = (props) => {
 
 
 function getNotes(firebase, db: firebase.firestore.Firestore, cb: Function): void {
-  var resp: Notes[] = [];
+  var resp: Note[] = [];
   const user: firebase.User = firebase.auth().currentUser;
   db.collection("notes").where('uid', '==', user.uid ).orderBy('updated', 'desc').get().then((querySnapshot: firebase.firestore.DocumentData) => {
       querySnapshot.forEach((doc) => {
@@ -103,6 +89,8 @@ function getNotes(firebase, db: firebase.firestore.Firestore, cb: Function): voi
             id: doc.id,
             title: doc.data().title,
             body:doc.data().body,
+            uid: doc.data().uid,
+            updated: doc.data().updated,
           })
       });
     cb(resp);

@@ -1,18 +1,20 @@
 import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
-import { FirebaseContext } from '../store.tsx'
 import { useRouter } from "next/router";
+import { FirebaseContext } from '../store';
+import { Note, ContextType } from '../types';
 
 export default function Home() {
 
-  const { notesData, firebase, updateNotes } = useContext(FirebaseContext);
-  const [notes, setNotes ] = useState([]);
+  const { notesData, firebase, updateNotes } = useContext<ContextType>(FirebaseContext);
+  const [notes, setNotes ] = useState<Note[]>([]);
   const router = useRouter();
 
   const doLogout = () => {
     firebase.auth().signOut().then(function() {
     // Sign-out successful.
     }).catch(function(error) {
+      console.log(error)
     // An error happened.
     });
   }
